@@ -1,0 +1,54 @@
+-- FUNCTION: public.call_cod_prv_frm_str(character varying, character varying)
+
+-- DROP FUNCTION public.call_cod_prv_frm_str(character varying, character varying);
+
+CREATE OR REPLACE FUNCTION public.call_cod_prv_frm_str(
+	pcv_nm_str character varying,
+	pcv_nm_user character varying)
+    RETURNS character varying
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+DECLARE
+	v_cod_city character varying;
+	v_num_times integer;
+	v_times_allow integer;
+BEGIN
+	-- Obtiene los datos que coincidan con el string	
+	SELECT ctg_provincias.ent_cod, ctg_provincias.max_times 
+	INTO v_cod_city, v_times_allow
+	FROM public.ctg_provincias ctg_provincias
+	WHERE UPPER(TRIM(ctg_provincias.ent_name)) LIKE UPPER(TRIM('%'||pcv_nm_str||'%'))
+	LIMIT 1;
+	
+	-- valida en caso de que sea NULL
+	IF v_cod_city ISNULL THEN	
+		v_cod_city = '0';		
+		v_times_allow = 0;		
+	END IF;	
+	
+	
+	-- Validacion del total de veces permitidas.
+	IF v_cod_city != '0' THEN 
+		SELECT COUNT(*) INTO v_num_times
+		FROM public.log_times_detail log_times_detail
+		WHERE log_times_detail.ent_user = pcv_nm_user
+		AND log_times_detail.ent_cod_prov = v_cod_city;
+	
+		IF v_num_times ISNULL THEN
+			v_num_times = 0;
+		END IF;
+		
+		IF v_num_times >= v_times_allow THEN
+			v_cod_city = '0';
+			return v_cod_city;
+		END IF;
+	END IF; 
+	
+	RETURN v_cod_city;
+END
+$BODY$;
+
+ALTER FUNCTION public.call_cod_prv_frm_str(character varying, character varying)
+    OWNER TO postgres;

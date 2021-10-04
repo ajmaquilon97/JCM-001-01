@@ -1,0 +1,43 @@
+-- Table: public.ctg_provincias
+
+-- DROP TABLE public.ctg_provincias;
+
+CREATE TABLE IF NOT EXISTS public.ctg_provincias
+(
+    ent_cod character varying(5) COLLATE pg_catalog."default" NOT NULL,
+    ent_name character varying(100) COLLATE pg_catalog."default",
+    max_times integer NOT NULL DEFAULT 10,
+    CONSTRAINT ctg_provincias_pkey PRIMARY KEY (ent_cod)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.ctg_provincias
+    OWNER to postgres;
+
+
+insert into public.ctg_provincias (ent_cod, ent_nombre)
+values ('21801','Azuay',10),
+('21802','Bolivar',10),
+('21803','Cañar',10),
+('21804','Carchi',10),
+('21805','Cotopaxi',10),
+('21806','Chimborazo',10),
+('21807','El Oro',10),
+('21808','Esmeraldas',10),
+('21809','Guayas',10),
+('21810','Imbabura',10),
+('21811','Loja',10),
+('21812','Los Rios',10),
+('21813','Manabí',10),
+('21814','Morona Santiago',10),
+('21815','Napo',10),
+('21816','Pastaza',10),
+('21817','Pichincha',10),
+('21818','Tungurahua',10),
+('21819','Zamora Chinchipe',10),
+('21820','Galápagos',10),
+('21821','Sucumbíos',10),
+('21822','Orellana',10),
+('21823','Santo Domingo de los Tsáchilas',10),
+('21824','Santa Elena',10);

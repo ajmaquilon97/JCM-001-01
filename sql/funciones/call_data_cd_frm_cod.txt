@@ -1,0 +1,34 @@
+-- FUNCTION: public.call_data_cd_frm_cod(character varying)
+
+-- DROP FUNCTION public.call_data_cd_frm_cod(character varying);
+
+CREATE OR REPLACE FUNCTION public.call_data_cd_frm_cod(
+	pcv_cod_provincia character varying)
+    RETURNS SETOF ctg_ciudades 
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+    ROWS 1000
+
+AS $BODY$
+DECLARE
+	
+	registro ctg_ciudades%ROWTYPE;
+	
+	/*getData CURSOR FOR SELECT * FROM public.ctg_ciudades ctg_ciudades 
+					   WHERE ctg_ciudades.ent_cod_provincia = pcv_cod_provincia;*/
+begin
+	
+ -- Cursor IMPLICITO en el ciclo FOR
+   FOR registro IN SELECT * FROM public.ctg_ciudades ctg_ciudades 
+					   WHERE ctg_ciudades.ent_cod_provincia = pcv_cod_provincia LOOP 
+       RETURN NEXT registro;
+   END LOOP;
+   RETURN;
+	
+	
+end;
+$BODY$;
+
+ALTER FUNCTION public.call_data_cd_frm_cod(character varying)
+    OWNER TO postgres;

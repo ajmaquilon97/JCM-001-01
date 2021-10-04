@@ -1,0 +1,63 @@
+-- FUNCTION: public.insert_log(character varying, character varying, text)
+
+-- DROP FUNCTION public.insert_log(character varying, character varying, text);
+
+CREATE OR REPLACE FUNCTION public.insert_log(
+	pcv_nm_user character varying,
+	pcv_cod_prov character varying,
+	ptxt_key text)
+    RETURNS text
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+DECLARE
+	v_exist_reg integer;
+	v_cod_log_times bigint;
+BEGIN
+	
+	SELECT COUNT(*) INTO v_exist_reg
+	FROM public.log_times log_times
+	WHERE log_times.ent_cod_prov = pcv_cod_prov
+	AND log_times.ent_user = pcv_nm_user;
+	
+	IF v_exist_reg ISNULL THEN
+		v_exist_reg = 0;
+	END IF;
+	
+	IF v_exist_reg > 0 THEN
+		SELECT log_times.ent_cod INTO v_cod_log_times
+		FROM public.log_times log_times
+		WHERE log_times.ent_cod_prov = pcv_cod_prov
+		AND log_times.ent_user = pcv_nm_user;
+		
+		UPDATE public.log_times
+		SET ent_key = ptxt_key
+		WHERE public.log_times.ent_cod = v_cod_log_times;
+		
+		INSERT INTO public.log_times_detail(ent_cab, ent_user, ent_date_reg, ent_cod_prov)
+		VALUES (v_cod_log_times, pcv_nm_user, NOW(), pcv_cod_prov);
+		
+	END IF;
+	
+	IF v_exist_reg = 0 THEN
+	
+			INSERT INTO public.log_times(ent_user, ent_cod_prov, ent_key)
+			VALUES (pcv_nm_user, pcv_cod_prov, ptxt_key);
+	
+		
+		SELECT log_times.ent_cod INTO v_cod_log_times
+		FROM public.log_times log_times
+		WHERE log_times.ent_cod_prov = pcv_cod_prov
+		AND log_times.ent_user = pcv_nm_user;
+		
+		INSERT INTO public.log_times_detail(ent_cab, ent_user, ent_date_reg, ent_cod_prov)
+		VALUES (v_cod_log_times, pcv_nm_user, NOW(), pcv_cod_prov);
+	END IF;
+	
+	RETURN ptxt_key;
+END
+$BODY$;
+
+ALTER FUNCTION public.insert_log(character varying, character varying, text)
+    OWNER TO postgres;
